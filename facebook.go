@@ -3,11 +3,11 @@ package facebook
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"errors"
 )
 
 // The Facebook Client object.
