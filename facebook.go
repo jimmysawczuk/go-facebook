@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"errors"
 )
 
 // The Facebook Client object.
@@ -59,7 +60,7 @@ func (f *Facebook) GetAccessToken() string {
 // Figures out what permissions are attached to the current access token.
 func (f *Facebook) GetAccessTokenInfo() (permissions []interface{}, err error) {
 	if f.accessToken == "" {
-		return
+		return nil, errors.New("No new access token provided")
 	}
 
 	result, _ := f.Api("/me/permissions", Get, nil)
