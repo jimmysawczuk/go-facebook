@@ -12,6 +12,25 @@ import (
 )
 ```
 
+## Example
+
+```go
+package main
+
+import (
+    "github.com/jimmysawczuk/go-facebook"
+    "fmt"
+)
+
+func main() {
+    fb := facebook.New("<app id>", "<secret>")
+    fb.SetAccessToken("<token>")
+
+    resp, err := fb.Api("/me", facebook.Get, nil)
+    fmt.Println(resp, err)
+}
+```
+
 ## Documentation
 
 Here's the output of `go doc` for now. I'll add better documentation soon.
