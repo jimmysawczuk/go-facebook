@@ -63,7 +63,7 @@ func (f *Facebook) GetAccessTokenInfo() (permissions []interface{}, err error) {
 		return nil, errors.New("No new access token provided")
 	}
 
-	result, _ := f.Api("/me/permissions", Get, nil)
+	result, _ := f.api("/me/permissions", Get, nil)
 
 	if result["data"] != nil {
 		permissions = result["data"].([]interface{})
@@ -77,7 +77,7 @@ func (f *Facebook) GetAccessTokenInfo() (permissions []interface{}, err error) {
 }
 
 // Makes a standard API call to the Graph API.
-func (f *Facebook) Api(url string, method HTTPMethod, params map[string]interface{}) (result map[string]interface{}, err error) {
+func (f *Facebook) api(url string, method HTTPMethod, params map[string]interface{}) (result map[string]interface{}, err error) {
 
 	if params == nil {
 		params = make(map[string]interface{})
@@ -109,12 +109,17 @@ func (f *Facebook) Api(url string, method HTTPMethod, params map[string]interfac
 
 // A wrapper method for Api to make POST requests.
 func (f *Facebook) Post(url string, params map[string]interface{}) (result map[string]interface{}, err error) {
-	return f.Api(url, Post, params)
+	return f.api(url, Post, params)
 }
 
 // A wrapper method for Api to make GET requests.
 func (f *Facebook) Get(url string, params map[string]interface{}) (result map[string]interface{}, err error) {
-	return f.Api(url, Get, params)
+	return f.api(url, Get, params)
+}
+
+// A wrapper method for Api to make PUT requests.
+func (f *Facebook) Put(url string, params map[string]interface{}) (result map[string]interface{}, err error) {
+	return f.api(url, Put, params)
 }
 
 func getQueryString(params map[string]interface{}) string {

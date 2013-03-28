@@ -7,7 +7,7 @@ import (
 func TestGraphAPI(t *testing.T) {
 	fb := BlankAPIClient
 
-	result, err := fb.Api("/zuck", Get, make(map[string]interface{}))
+	result, err := fb.Get("/zuck", nil)
 
 	if result == nil && err != nil {
 		t.Errorf("%s", err)
