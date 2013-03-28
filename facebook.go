@@ -107,11 +107,20 @@ func (f *Facebook) Api(url string, method HTTPMethod, params map[string]interfac
 	return result, err
 }
 
+// A wrapper method for Api to make POST requests.
+func (f *Facebook) Post(url string, params map[string]interface{}) (result map[string]interface{}, err error) {
+	return f.Api(url, Post, params)
+}
+
+// A wrapper method for Api to make GET requests.
+func (f *Facebook) Get(url string, params map[string]interface{}) (result map[string]interface{}, err error) {
+	return f.Api(url, Get, params)
+}
+
 func getQueryString(params map[string]interface{}) string {
 	values, _ := url.ParseQuery("")
 
 	for key, value := range params {
-
 		switch value.(type) {
 		default:
 			panic("Can't make a string!")
