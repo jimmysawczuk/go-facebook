@@ -19,9 +19,10 @@ type Facebook struct {
 
 // A specific error that's returned from Facebook if there's an error with a request to the Graph API.
 type FacebookGraphError struct {
-	Code    int
-	Message string
-	Type    string
+	Code    int    `json:"code"`
+	Subcode int    `json:"error_subcode"`
+	Message string `json:"message"`
+	Type    string `json:"type"`
 }
 
 type HTTPMethod string
@@ -69,8 +70,7 @@ func (f *Facebook) GetAccessTokenInfo() (permissions []interface{}, err error) {
 		permissions = result["data"].([]interface{})
 	} else if result["error"] != nil {
 		permissions = nil
-		e := result["error"].(map[string]interface{})
-		err = NewFacebookGraphError(int(e["code"].(float64)), e["type"].(string), e["message"].(string))
+		err, _ = NewFacebookGraphError(result["error"].(map[string]interface{}))
 	}
 
 	return
@@ -145,14 +145,11 @@ func getQueryString(params map[string]interface{}) string {
 	return result
 }
 
-// Instanciates a new Facebook Graph Error.
-func NewFacebookGraphError(code int, error_type string, message string) FacebookGraphError {
-	e := new(FacebookGraphError)
-	e.Code = code
-	e.Type = error_type
-	e.Message = message
+func NewFacebookGraphError(data map[string]interface{}) (fge FacebookGraphError, err error) {
+	b, _ := json.Marshal(data)
+	err = json.Unmarshal(b, &fge)
 
-	return *e
+	return fge, err
 }
 
 func (e FacebookGraphError) String() string {
