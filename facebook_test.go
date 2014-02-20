@@ -4,7 +4,20 @@ import (
 	"testing"
 )
 
-var fb Facebook = *BlankAPIClient
+var fb *Client
+var access_token = "CAAU9I96vsVkBAJZCSSXZA32j1ZCZAiCngyveel3rRTYfVBXZCwcinHIrs7Bv5MINdgYHEG5mAUqPCbU6N6ATCRzcZAaBBpIwE5ajSNOQJTZBke5KAKGZBC1uaZAYZB7eKlcojCBGxJcmHc2B4m29vpH8ZCZCctlhgL8n1UuqgBZAzxJS09sgPOZAlEA0kiU29dRA0xlFgZD"
+
+func init() {
+	fb = New("1474599152759129", "40de603edd149f514312b632c15bfdd3")
+	fb.SetAccessToken(access_token)
+}
+
+func TestPermissions(t *testing.T) {
+	res := fb.LintAccessToken()
+	if res != nil {
+		t.Fail()
+	}
+}
 
 func TestGraphAPI(t *testing.T) {
 
@@ -17,16 +30,11 @@ func TestGraphAPI(t *testing.T) {
 }
 
 func TestInvalidCall(t *testing.T) {
-	result, _ := fb.Get("/zuckkkkkkkkkkkk", nil)
-
-	if _, exists := result["error"]; exists {
-		_, err := NewFacebookGraphError(result["error"].(map[string]interface{}))
-		if err != nil {
-			t.Errorf("%s", err)
-			t.Fail()
-		}
-
-	} else {
+	_, err := fb.Get("/1", nil)
+	switch err.(type) {
+	case GraphError:
+	default:
+		t.Errorf("Expected GraphError here, got %T", err)
 		t.Fail()
 	}
 }
