@@ -13,9 +13,11 @@ func init() {
 	_ = fmt.Sprintf
 }
 
-type FQLQuery struct {
-	Query  string
-	Params []interface{}
+type Query struct {
+	Query      string
+	raw_params []interface{}
+	Params     []FQLParam
+	Options    QueryOptions
 
 	Result []interface{}
 
@@ -24,33 +26,50 @@ type FQLQuery struct {
 	built_queries []string
 }
 
-type FQLError struct {
-	Error string `json:"error_msg"`
-	Code  int    `json:"error_code"`
+type Error struct {
+	Message string `json:"error_msg"`
+	Code    int    `json:"error_code"`
 
 	Query       string `json:"query"`
 	AccessToken string `json:"access_token"`
 }
 
-type FQLResult struct {
+type Result struct {
 	raw_result []interface{}
 }
 
-type FQLResultRow struct {
+type ResultRow struct {
+}
+
+type QueryOptions struct {
+	MaxParams int
 }
 
 const fql_endpoint string = "https://api.facebook.com/method/fql.query"
 
-func NewFQLQuery(query string, params ...interface{}) *FQLQuery {
-	f := FQLQuery{
-		Query:  query,
-		Params: params,
+func NewQuery(query string, params ...interface{}) *Query {
+	f := Query{
+		Query:      query,
+		raw_params: params,
+		Params:     []FQLParam{},
+		Options: QueryOptions{
+			MaxParams: 1,
+		},
+	}
+
+	for _, v := range f.raw_params {
+		switch v.(type) {
+		case int, int32, int64, float32, float64, string:
+			f.Params = append(f.Params, NewParam(v))
+		case []int, []int32, []int64, []float32, []float64, []string:
+			f.Params = append(f.Params, NewParamSet(v))
+		}
 	}
 
 	return &f
 }
 
-func (this *FQLQuery) Exec() (err error) {
+func (this *Query) Exec() (err error) {
 
 	err = this.build()
 	if err != nil {
@@ -60,13 +79,15 @@ func (this *FQLQuery) Exec() (err error) {
 	this.Result = make([]interface{}, 0)
 
 	for _, query := range this.built_queries {
+		if query == "" {
+			continue
+		}
+
 		resp, err := http.PostForm(fql_endpoint, url.Values{
 			"format":       []string{"json"},
 			"access_token": []string{this.AccessToken},
 			"query":        []string{query},
 		})
-
-		fmt.Println(query)
 
 		if err != nil {
 			return err
@@ -77,10 +98,10 @@ func (this *FQLQuery) Exec() (err error) {
 			return err
 		}
 
-		error_container := FQLError{}
+		error_container := Error{}
 		err = json.Unmarshal(buf, &error_container)
 		if err == nil {
-			fmt.Println(err)
+			return error_container
 		} else {
 			switch err.(type) {
 			case *json.UnmarshalTypeError:
@@ -106,7 +127,7 @@ func (this *FQLQuery) Exec() (err error) {
 	return err
 }
 
-func (this *FQLQuery) build() error {
+func (this *Query) build() error {
 	tokens := make(map[int]string)
 	for i := 0; i < len(this.Query)-1; i++ {
 		v := this.Query[i]
@@ -126,35 +147,43 @@ func (this *FQLQuery) build() error {
 
 	j := 0
 	for _, v := range tokens {
-		param := this.Params[j]
 		switch v {
-		case `%s`:
-			switch param.(type) {
-			case string, fmt.Stringer:
-				query = strings.Replace(query, `%s`, fmt.Sprintf(`'%s'`, param), 1)
-			}
-		case `%d`:
-			switch param.(type) {
-			case int, int32, int64:
-				query = strings.Replace(query, `%d`, fmt.Sprintf(`'%d'`, param), 1)
-			}
-		case `%f`:
-			switch param.(type) {
-			case float32, float64:
-				query = strings.Replace(query, `%f`, fmt.Sprintf(`'%f'`, param), 1)
+		case `%s`, `%d`, `%f`:
+			param := this.Params[j]
+			query = strings.Replace(query, v, param.Escape(), 1)
+		}
+		j++
+	}
+
+	this.built_queries = []string{query}
+
+	j = 0
+	for _, v := range tokens {
+		switch v {
+		case `%S`, `%D`, `%F`:
+			param := this.Params[j]
+
+			if param.Len() > this.Options.MaxParams && this.Options.MaxParams > 0 {
+				len_built_queries := len(this.built_queries)
+				for i := 0; i < len_built_queries; i++ {
+					new_queries := []string{}
+					for m := 0; m < param.Len(); m += this.Options.MaxParams {
+						sliced_query := param.(ParamSet)[m : m+this.Options.MaxParams].Escape()
+						new_query := strings.Replace(query, v, sliced_query, 1)
+						new_queries = append(new_queries, new_query)
+					}
+					this.built_queries[i] = ""
+					this.built_queries = append(this.built_queries, new_queries...)
+				}
 			}
 		}
 		j++
 	}
 
-	fmt.Println(query)
-
-	this.built_queries = []string{query}
-
 	return nil
 }
 
-func (this *FQLResult) UnmarshalJSON(inc []byte) error {
+func (this *Result) UnmarshalJSON(inc []byte) error {
 	res := make([]interface{}, 0)
 	err := unmarshalFQLResult(inc, &res)
 
@@ -206,4 +235,8 @@ func matching(inc []byte, open, close byte, start_at int) int {
 	}
 
 	return -1
+}
+
+func (this Error) Error() string {
+	return fmt.Sprintf("FQL Error %d: %s", this.Code, this.Message)
 }
