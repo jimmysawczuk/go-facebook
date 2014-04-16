@@ -17,7 +17,7 @@ func TestBasicQuery(t *testing.T) {
 		t.Fail()
 	}
 
-	if len(fql.Result) != 2 {
+	if fql.Result.Len() != 2 {
 		t.Fail()
 	}
 }
@@ -30,7 +30,7 @@ func TestParameterizedQuery(t *testing.T) {
 		t.Fail()
 	}
 
-	if len(fql.Result) != 2 {
+	if fql.Result.Len() != 2 {
 		t.Fail()
 	}
 }
@@ -43,7 +43,7 @@ func TestArrayQuery(t *testing.T) {
 		t.Fail()
 	}
 
-	if len(fql.Result) != 2 {
+	if fql.Result.Len() != 2 {
 		t.Fail()
 	}
 }
@@ -56,13 +56,13 @@ func TestArrayCombinedQuery(t *testing.T) {
 		t.Fail()
 	}
 
-	if len(fql.Result) != 3 {
+	if fql.Result.Len() != 3 {
 		t.Fail()
 	}
 }
 
 func TestBadQuery(t *testing.T) {
-	// invalid field
+	// invalid field in query
 	fql := NewQuery("SELECT id, name, fan_count FROM page WHERE username IN ('pepsi') AND fan_count > %d", int64(3e7))
 	err := fql.Exec()
 	switch err.(type) {

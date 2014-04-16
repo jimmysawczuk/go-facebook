@@ -19,7 +19,7 @@ type Query struct {
 	Params     []FQLParam
 	Options    QueryOptions
 
-	Result []interface{}
+	Result Result
 
 	AccessToken string
 
@@ -34,18 +34,17 @@ type Error struct {
 	AccessToken string `json:"access_token"`
 }
 
-type Result struct {
-	raw_result []interface{}
-}
-
-type ResultRow struct {
-}
-
 type QueryOptions struct {
 	MaxParams int
 }
 
-const fql_endpoint string = "https://api.facebook.com/method/fql.query"
+const (
+	fql_endpoint string = "https://api.facebook.com/method/fql.query"
+)
+
+var (
+	MaxParams int = 1
+)
 
 func NewQuery(query string, params ...interface{}) *Query {
 	f := Query{
@@ -53,7 +52,7 @@ func NewQuery(query string, params ...interface{}) *Query {
 		raw_params: params,
 		Params:     []FQLParam{},
 		Options: QueryOptions{
-			MaxParams: 1,
+			MaxParams: MaxParams,
 		},
 	}
 
@@ -76,7 +75,7 @@ func (this *Query) Exec() (err error) {
 		return err
 	}
 
-	this.Result = make([]interface{}, 0)
+	this.Result = Result{}
 
 	for _, query := range this.built_queries {
 		if query == "" {
@@ -118,11 +117,13 @@ func (this *Query) Exec() (err error) {
 		}
 
 		if res_arr, ok := res.([]interface{}); ok {
-			for _, row := range res_arr {
-				this.Result = append(this.Result, row)
+			for _, _row := range res_arr {
+				this.Result.raw_result = append(this.Result.raw_result, _row)
 			}
 		}
 	}
+
+	this.Result.Unpack()
 
 	return err
 }
@@ -183,39 +184,39 @@ func (this *Query) build() error {
 	return nil
 }
 
-func (this *Result) UnmarshalJSON(inc []byte) error {
-	res := make([]interface{}, 0)
-	err := unmarshalFQLResult(inc, &res)
+// func (this *Result) UnmarshalJSON(inc []byte) error {
+// 	res := make([]interface{}, 0)
+// 	err := unmarshalFQLResult(inc, &res)
 
-	this.raw_result = res
+// 	this.raw_result = res
 
-	return err
-}
+// 	return err
+// }
 
-func unmarshalFQLResult(inc []byte, res *[]interface{}) error {
-	i := 0
+// func unmarshalFQLResult(inc []byte, res *[]interface{}) error {
+// 	i := 0
 
-	for i < len(inc) {
-		switch inc[i] {
-		case '[':
-			pos := matching(inc, '[', ']', i)
-			slice := inc[i : pos+1]
-			unmarshalFQLResult(slice[1:len(slice)-1], res)
-			i = pos + 1
-		case '{':
-			pos := matching(inc, '{', '}', i)
-			slice := inc[i : pos+1]
-			temp := make([]map[string]interface{}, 0)
-			json.Unmarshal(slice, &temp)
-			*res = append(*res, temp)
-			i = pos + 1
-		case ',':
-			i++
-		}
-	}
+// 	for i < len(inc) {
+// 		switch inc[i] {
+// 		case '[':
+// 			pos := matching(inc, '[', ']', i)
+// 			slice := inc[i : pos+1]
+// 			unmarshalFQLResult(slice[1:len(slice)-1], res)
+// 			i = pos + 1
+// 		case '{':
+// 			pos := matching(inc, '{', '}', i)
+// 			slice := inc[i : pos+1]
+// 			temp := make([]map[string]interface{}, 0)
+// 			json.Unmarshal(slice, &temp)
+// 			*res = append(*res, temp)
+// 			i = pos + 1
+// 		case ',':
+// 			i++
+// 		}
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 func matching(inc []byte, open, close byte, start_at int) int {
 	depth := 0
