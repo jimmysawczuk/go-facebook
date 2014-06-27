@@ -218,7 +218,7 @@ func (at AccessToken) String() string {
 }
 
 func (at AccessToken) Empty() bool {
-	return at.token != ""
+	return at.token == ""
 }
 
 func (at AccessToken) Valid() bool {

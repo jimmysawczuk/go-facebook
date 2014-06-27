@@ -5,7 +5,7 @@ import (
 )
 
 var fb *Client
-var access_token = "CAAU9I96vsVkBAJZCSSXZA32j1ZCZAiCngyveel3rRTYfVBXZCwcinHIrs7Bv5MINdgYHEG5mAUqPCbU6N6ATCRzcZAaBBpIwE5ajSNOQJTZBke5KAKGZBC1uaZAYZB7eKlcojCBGxJcmHc2B4m29vpH8ZCZCctlhgL8n1UuqgBZAzxJS09sgPOZAlEA0kiU29dRA0xlFgZD"
+var access_token = "CAAU9I96vsVkBAL4YjkLLGbA6I15WZBzqU075wAzriZCLFuNPMRhKkV1WXUW2o9HujYF05Xdyk2xC7b9gZCdLZAgmR3d8y1ZBpIxNECerpxc4e0fd63ZCN6wuT2dJndgoZBzj9dXZA6fuC1aoTWMAPi28ZBiOBgqKEZB2ipS6LUKX8IvRfXsXS8fWxAxc8efFm6mPgZD"
 
 func init() {
 	fb = New("1474599152759129", "40de603edd149f514312b632c15bfdd3")
@@ -13,8 +13,9 @@ func init() {
 }
 
 func TestPermissions(t *testing.T) {
-	res := fb.LintAccessToken()
-	if res != nil {
+	err := fb.LintAccessToken()
+	if err != nil {
+		t.Log(err)
 		t.Fail()
 	}
 }
@@ -22,11 +23,20 @@ func TestPermissions(t *testing.T) {
 func TestGraphAPI(t *testing.T) {
 
 	result, err := fb.Get("/zuck", nil)
-
 	if result == nil && err != nil {
 		t.Errorf("%s", err)
 		t.Fail()
 	}
+}
+
+func TestBlockedEndpoint(t *testing.T) {
+
+	result, err := fb.Get("/budweiser", nil)
+	if result == nil && err != nil {
+		t.Errorf("%s", err)
+		t.Fail()
+	}
+
 }
 
 func TestInvalidCall(t *testing.T) {
