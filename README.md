@@ -14,6 +14,10 @@ import (
 )
 ```
 
+## Refactor (important)
+
+This refactor is still a work in progress (not that master is rock solid). I'll probably make some improvements/changes that will break stuff, and I might scrap this whole branch and start over. You've been warned.
+
 ## Example
 
 ```go
@@ -28,7 +32,7 @@ func main() {
     fb := facebook.New("<app id>", "<secret>")
     fb.SetAccessToken("<token>")
 
-    resp, err := fb.Api("/me", facebook.Get, nil)
+    resp, err := fb.Get("/me", nil)
     fmt.Println(resp, err)
 }
 ```
