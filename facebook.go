@@ -71,6 +71,20 @@ func (f *Client) AccessToken() AccessToken {
 	return f.accessToken
 }
 
+func (f *Client) GetAppAccessToken() (string, error) {
+	result, err := f.api("/oauth/access_token", Get, map[string]interface{}{
+		"client_id":     f.appId,
+		"client_secret": f.secret,
+		"grant_type":    "client_credentials",
+	})
+
+	if access_token, set := result["access_token"]; set && err == nil {
+		return access_token.(string), nil
+	} else {
+		return "", err
+	}
+}
+
 // Figures out what permissions are attached to the current access token.
 func (f *Client) LintAccessToken() error {
 	at := f.accessToken
@@ -112,7 +126,7 @@ func (f *Client) LintAccessToken() error {
 }
 
 // Makes a standard API call to the Graph API.
-func (f *Client) api(url string, method HTTPMethod, params map[string]interface{}) (map[string]interface{}, error) {
+func (f *Client) api(req_url string, method HTTPMethod, params map[string]interface{}) (map[string]interface{}, error) {
 
 	if params == nil {
 		params = make(map[string]interface{})
@@ -122,9 +136,9 @@ func (f *Client) api(url string, method HTTPMethod, params map[string]interface{
 		params["access_token"] = f.accessToken.token
 	}
 
-	url = graph_endpoint + url + getQueryString(params)
+	req_url = graph_endpoint + req_url + getQueryString(params)
 
-	resp, err := http.Get(url)
+	resp, err := http.Get(req_url)
 	if err != nil {
 		return nil, err
 	}
@@ -142,10 +156,27 @@ func (f *Client) api(url string, method HTTPMethod, params map[string]interface{
 			return nil, err
 		}
 	} else {
-		result := make(map[string]interface{})
-		err = json.Unmarshal(buf, &result)
 
-		return result, err
+		map_result := make(map[string]interface{})
+		err = json.Unmarshal(buf, &map_result)
+		if err == nil {
+			return map_result, err
+		}
+
+		values, err := url.ParseQuery(string(buf))
+		if err == nil {
+			for k, v := range values {
+				if len(v) == 1 {
+					map_result[k] = v[0]
+				} else {
+					map_result[k] = v
+				}
+			}
+
+			return map_result, nil
+		}
+
+		return map_result, fmt.Errorf("couldn't parse response from graph")
 	}
 }
 
