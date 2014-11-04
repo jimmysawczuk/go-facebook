@@ -25,38 +25,32 @@ func (at AccessToken) Valid() bool {
 }
 
 // Figures out what permissions are attached to the current access token.
-func (at *AccessToken) Lint() error {
+func (at *AccessToken) Lint(f *Client) error {
 	if at.token == "" {
 		return fmt.Errorf("Access token not set")
 	}
 
-	result, err := f.api("/debug_token", Get, map[string]interface{}{
-		"input_token":  at.token,
-		"access_token": f.appId + "|" + f.secret,
+	req := f.Get("/debug_token", GraphQueryString{
+		"input_token":  []string{at.token},
+		"access_token": []string{f.appId + "|" + f.secret},
 	})
 
-	if err == nil {
-		if _, exists := result["data"]; exists {
-			data := result["data"].(map[string]interface{})
+	target := struct {
+		Data struct {
+			AppId       int64    `json:"app_id"`
+			Valid       bool     `json:"is_valid"`
+			Application string   `json:"application"`
+			UserId      int64    `json:"user_id"`
+			ExpiresAt   int64    `json:"expires_at"`
+			Scopes      []string `json:"scopes"`
+		} `json:"data"`
+	}{}
 
-			if valid, exists := data["is_valid"]; exists {
-				at.valid = valid.(bool)
-			}
-
-			if expires, exists := data["expires_at"]; exists {
-				at.expires = time.Unix(int64(expires.(float64)), 0)
-			}
-
-			if _, exists := data["scopes"]; exists {
-				perms := data["scopes"].([]interface{})
-				at.permissions = []string{}
-				for _, v := range perms {
-					at.permissions = append(at.permissions, fmt.Sprintf("%s", v))
-				}
-			}
-		}
-
-		f.accessToken = at
+	err := req.Exec(&target)
+	if err == nil && target.Data.Valid {
+		at.valid = target.Data.Valid
+		at.expires = time.Unix(target.Data.ExpiresAt, 0)
+		at.permissions = target.Data.Scopes
 	}
 
 	return err
