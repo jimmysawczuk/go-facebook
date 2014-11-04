@@ -4,9 +4,6 @@ package facebook
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"net/http"
-	"net/url"
 	"time"
 )
 
@@ -16,34 +13,6 @@ type Client struct {
 	secret      string
 	accessToken AccessToken
 }
-
-// A specific error that's returned from Facebook if there's an error with a request to the Graph API.
-type GraphError struct {
-	Code       int    `json:"code"`
-	Subcode    int    `json:"error_subcode"`
-	Message    string `json:"message"`
-	Type       string `json:"type"`
-	HTTPStatus int    `json:"http"`
-}
-
-type AccessToken struct {
-	token       string
-	valid       bool
-	expires     time.Time
-	permissions []string
-}
-
-type rawGraphError struct {
-	Error GraphError `json:"error"`
-}
-
-type HTTPMethod string
-
-const (
-	Get  HTTPMethod = "GET"
-	Post            = "POST"
-	Put             = "PUT"
-)
 
 const graph_endpoint string = "https://graph.facebook.com"
 
@@ -125,99 +94,6 @@ func (f *Client) LintAccessToken() error {
 	return err
 }
 
-// Makes a standard API call to the Graph API.
-func (f *Client) api(req_url string, method HTTPMethod, params map[string]interface{}) (map[string]interface{}, error) {
-
-	if params == nil {
-		params = make(map[string]interface{})
-	}
-
-	if _, exists := params["access_token"]; !exists && !f.accessToken.Empty() && f.accessToken.Valid() {
-		params["access_token"] = f.accessToken.token
-	}
-
-	req_url = graph_endpoint + req_url + getQueryString(params)
-
-	resp, err := http.Get(req_url)
-	if err != nil {
-		return nil, err
-	}
-
-	buf, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	if resp.StatusCode != 200 {
-		g_err, err := parseError(resp.StatusCode, buf)
-		if err == nil {
-			return nil, g_err
-		} else {
-			return nil, err
-		}
-	} else {
-
-		map_result := make(map[string]interface{})
-		err = json.Unmarshal(buf, &map_result)
-		if err == nil {
-			return map_result, err
-		}
-
-		values, err := url.ParseQuery(string(buf))
-		if err == nil {
-			for k, v := range values {
-				if len(v) == 1 {
-					map_result[k] = v[0]
-				} else {
-					map_result[k] = v
-				}
-			}
-
-			return map_result, nil
-		}
-
-		return map_result, fmt.Errorf("couldn't parse response from graph")
-	}
-}
-
-// A wrapper method for Api to make POST requests.
-func (f *Client) Post(url string, params map[string]interface{}) (result map[string]interface{}, err error) {
-	return f.api(url, Post, params)
-}
-
-// A wrapper method for Api to make GET requests.
-func (f *Client) Get(url string, params map[string]interface{}) (result map[string]interface{}, err error) {
-	return f.api(url, Get, params)
-}
-
-// A wrapper method for Api to make PUT requests.
-func (f *Client) Put(url string, params map[string]interface{}) (result map[string]interface{}, err error) {
-	return f.api(url, Put, params)
-}
-
-func getQueryString(params map[string]interface{}) string {
-	values, _ := url.ParseQuery("")
-
-	for key, value := range params {
-		switch value.(type) {
-		case string:
-			values.Add(key, value.(string))
-		case fmt.Stringer:
-			values.Add(key, value.(fmt.Stringer).String())
-		default:
-			panic("Can't make a string!")
-		}
-	}
-
-	result := values.Encode()
-
-	if result != "" {
-		result = "?" + result
-	}
-
-	return result
-}
-
 func NewGraphError(data map[string]interface{}) (fge GraphError, err error) {
 	b, _ := json.Marshal(data)
 	err = json.Unmarshal(b, &fge)
@@ -242,16 +118,4 @@ func parseError(status_code int, buf []byte) (GraphError, error) {
 	} else {
 		return GraphError{}, err
 	}
-}
-
-func (at AccessToken) String() string {
-	return fmt.Sprintf("%s, valid: %t, expires: %s, perms: %s", at.token, at.valid, at.expires, at.permissions)
-}
-
-func (at AccessToken) Empty() bool {
-	return at.token == ""
-}
-
-func (at AccessToken) Valid() bool {
-	return at.valid
 }
