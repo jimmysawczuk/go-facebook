@@ -45,8 +45,7 @@ func TestGraphAPI(t *testing.T) {
 }
 
 func TestInvalidGraphCall(t *testing.T) {
-
-	req := fb.Get("/zuckkkkkkk", nil)
+	req := fb.Get("/1", nil)
 
 	target := struct {
 		ID       string `json:"id"`
@@ -56,8 +55,10 @@ func TestInvalidGraphCall(t *testing.T) {
 
 	err := req.Exec(&target)
 
-	if _, ok := err.(GraphError); !ok {
-		t.Errorf("This call should have failed and marshalled into a GraphError, but didn't: %s", err)
+	if graph_error, ok := err.(GraphError); !ok {
+		t.Errorf("call should have failed and returned a GraphError, but returned %T instead: %s", err, err)
+	} else if ok && graph_error.Code != 803 {
+		t.Errorf("call should have failed with code 803, instead failed with %d", graph_error.Code)
 	}
 }
 

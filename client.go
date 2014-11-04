@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"path"
 )
 
 // The Facebook Client object.
@@ -25,10 +26,10 @@ const (
 	Put             = "PUT"
 
 	Unversioned GraphAPIVersion = ""
-	Version10                   = "1.0"
-	Version20                   = "2.0"
-	Version21                   = "2.1"
-	Version22                   = "2.2"
+	Version10                   = "v1.0"
+	Version20                   = "v2.0"
+	Version21                   = "v2.1"
+	Version22                   = "v2.2"
 )
 
 const graph_endpoint string = "https://graph.facebook.com"
@@ -94,15 +95,17 @@ func (f *Client) NewGraphRequest(method HTTPMethod, path string, params GraphQue
 
 func (r *GraphRequest) Exec(target interface{}) error {
 
-	path := r.Path
+	p := r.Path
 	if r.Version != Unversioned {
-		path = "/" + string(r.Version) + "/" + path
+		p = "/" + string(r.Version) + "/" + p
 	}
+
+	p = path.Clean(p)
 
 	url := url.URL{
 		Scheme:   "https",
 		Host:     "graph.facebook.com",
-		Path:     path,
+		Path:     p,
 		RawQuery: url.Values(r.Query).Encode(),
 	}
 
@@ -135,7 +138,7 @@ func (r *GraphRequest) Exec(target interface{}) error {
 	if r.IsJSON {
 		err = json.Unmarshal(buf, target)
 		if err != nil {
-			return fmt.Errorf("error unmarshaling response into %T: %s", target, err)
+			return fmt.Errorf("error unmarshaling response into %T: %s\n\n%s", target, err, string(buf))
 		}
 	} else if _, ok := target.(*[]byte); ok {
 		*(target.(*[]byte)) = buf
@@ -177,73 +180,3 @@ func (f *Client) GetAppAccessToken() (string, error) {
 		return "", fmt.Errorf("error executing request for access token: %s", err)
 	}
 }
-
-// // Makes a standard API call to the Graph API.
-// func (f *Client) api(req_url string, method HTTPMethod, params map[string]interface{}) (map[string]interface{}, error) {
-
-// 	if params == nil {
-// 		params = make(map[string]interface{})
-// 	}
-
-// 	if _, exists := params["access_token"]; !exists && !f.accessToken.Empty() && f.accessToken.Valid() {
-// 		params["access_token"] = f.accessToken.token
-// 	}
-
-// 	req_url = graph_endpoint + req_url + getQueryString(params)
-
-// 	resp, err := http.Get(req_url)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	buf, err := ioutil.ReadAll(resp.Body)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	if resp.StatusCode != 200 {
-// 		g_err, err := parseError(resp.StatusCode, buf)
-// 		if err == nil {
-// 			return nil, g_err
-// 		} else {
-// 			return nil, err
-// 		}
-// 	} else {
-
-// 		map_result := make(map[string]interface{})
-// 		err = json.Unmarshal(buf, &map_result)
-// 		if err == nil {
-// 			return map_result, err
-// 		}
-
-// 		values, err := url.ParseQuery(string(buf))
-// 		if err == nil {
-// 			for k, v := range values {
-// 				if len(v) == 1 {
-// 					map_result[k] = v[0]
-// 				} else {
-// 					map_result[k] = v
-// 				}
-// 			}
-
-// 			return map_result, nil
-// 		}
-
-// 		return map_result, fmt.Errorf("couldn't parse response from graph")
-// 	}
-// }
-
-// // A wrapper method for Api to make POST requests.
-// func (f *Client) Post(url string, params map[string]interface{}) (result map[string]interface{}, err error) {
-// 	return f.api(url, Post, params)
-// }
-
-// // A wrapper method for Api to make GET requests.
-// func (f *Client) Get(url string, params map[string]interface{}) (result map[string]interface{}, err error) {
-// 	return f.api(url, Get, params)
-// }
-
-// // A wrapper method for Api to make PUT requests.
-// func (f *Client) Put(url string, params map[string]interface{}) (result map[string]interface{}, err error) {
-// 	return f.api(url, Put, params)
-// }
