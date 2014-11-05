@@ -23,7 +23,6 @@ func TestPermissions(t *testing.T) {
 	err := fb.LintAccessToken()
 	if err != nil {
 		t.Errorf("%s", err)
-		t.Fail()
 	}
 }
 
@@ -70,7 +69,26 @@ func TestBlockedEndpoint(t *testing.T) {
 	err := req.Exec(&target)
 	if err != nil {
 		t.Errorf("%s", err)
-		t.Fail()
 	}
 
+}
+
+func TestGetPage(t *testing.T) {
+	pg, err := fb.GetPage("starbucks")
+	if err != nil || pg.Username != "Starbucks" {
+		t.Errorf("%s", err)
+	}
+
+	pg2, err := fb.GetPage("22092443056")
+	if err != nil || pg2.Username != "Starbucks" {
+		t.Errorf("%s", err)
+	}
+
+}
+
+func TestGetUser(t *testing.T) {
+	jimmy, err := fb.GetUser("15504121")
+	if err != nil || jimmy.Name != "Jimmy Sawczuk" {
+		t.Errorf("%s", err)
+	}
 }
