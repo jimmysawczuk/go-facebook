@@ -14,12 +14,7 @@ type Page struct {
 	Link        string `json:"link"`
 	Website     string `json:"website"`
 
-	Cover struct {
-		ID      string `json:"id"`
-		Source  string `json:"source"`
-		OffsetX int    `json:"offset_x"`
-		OffsetY int    `json:"offset_y"`
-	} `json:"cover"`
+	Cover CoverPhoto `json:"cover"`
 
 	CanPost     bool `json:"can_post"`
 	IsPublished bool `json:"is_published"`

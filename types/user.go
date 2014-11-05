@@ -15,6 +15,13 @@ type Birthday time.Time
 
 type Gender string
 
+type CoverPhoto struct {
+	ID      string `json:"id"`
+	Source  string `json:"source"`
+	OffsetX int    `json:"offset_x"`
+	OffsetY int    `json:"offset_y"`
+}
+
 const (
 	Male   Gender = "male"
 	Female        = "female"
@@ -35,16 +42,11 @@ type User struct {
 	Birthday Birthday `json:"birthday"`
 	Email    string   `json:"email"`
 
-	Link     string `json:"link"`
-	Website  string `json:"website"`
-	Locale   string `json:"locale"`
-	Timezone int    `json:"timezone"`
-	Cover    struct {
-		ID      string `json:"id"`
-		Source  string `json:"source"`
-		OffsetX int    `json:"offset_x"`
-		OffsetY int    `json:"offset_y"`
-	} `json:"cover"`
+	Link     string     `json:"link"`
+	Website  string     `json:"website"`
+	Locale   string     `json:"locale"`
+	Timezone int        `json:"timezone"`
+	Cover    CoverPhoto `json:"cover"`
 
 	IsVerified bool `json:"is_verified"`
 	Verified   bool `json:"verified"`
