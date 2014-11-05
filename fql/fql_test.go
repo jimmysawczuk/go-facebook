@@ -52,11 +52,12 @@ func TestArrayCombinedQuery(t *testing.T) {
 	fql := NewQuery("SELECT page_id, name, fan_count FROM page WHERE username IN (%S) AND fan_count > %d", []string{"coca-cola", "pepsi", "burgerking", "McDonalds"}, int64(3e7))
 	err := fql.Exec()
 	if err != nil {
-		t.Errorf(err.Error())
+		t.Errorf("Error executing fql: %s", err)
 		t.Fail()
 	}
 
 	if fql.Result.Len() != 3 {
+		t.Errorf("Unexpected number of results: %d", fql.Result.Len())
 		t.Fail()
 	}
 }

@@ -14,10 +14,6 @@ import (
 )
 ```
 
-## Refactor (important)
-
-This refactor is still a work in progress (not that master is rock solid). I'll probably make some improvements/changes that will break stuff, and I might scrap this whole branch and start over. You've been warned.
-
 ## Example
 
 ```go
@@ -25,6 +21,7 @@ package main
 
 import (
     "github.com/jimmysawczuk/go-facebook"
+    "github.com/jimmysawczuk/go-facebook/types"
     "fmt"
 )
 
@@ -32,7 +29,11 @@ func main() {
     fb := facebook.New("<app id>", "<secret>")
     fb.SetAccessToken("<token>")
 
-    resp, err := fb.Get("/me", nil)
+    user, err := fb.GetUser("me")
+    fmt.Println(user, err)
+
+    resp := types.Page{}
+    err = fb.Get("/starbucks", nil).Exec(&resp)
     fmt.Println(resp, err)
 }
 ```
