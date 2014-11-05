@@ -1,7 +1,7 @@
 package facebook
 
 import (
-	"go-facebook/types"
+	"github.com/jimmysawczuk/go-facebook/types"
 )
 
 func (this *Client) GetPage(page_identifier string) (page types.Page, err error) {
