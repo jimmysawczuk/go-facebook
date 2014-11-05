@@ -1,5 +1,7 @@
 # `go-facebook`
 
+[ ![Codeship Status for jimmysawczuk/go-facebook](https://codeship.io/projects/766a4f10-43a4-0132-f598-66ff35301625/status)](https://codeship.io/projects/44729)
+
 A Facebook SDK for Go.
 
 ## Installation
@@ -11,6 +13,10 @@ import (
 	"github.com/jimmysawczuk/go-facebook"
 )
 ```
+
+## Refactor (important)
+
+This refactor is still a work in progress (not that master is rock solid). I'll probably make some improvements/changes that will break stuff, and I might scrap this whole branch and start over. You've been warned.
 
 ## Example
 
@@ -26,7 +32,7 @@ func main() {
     fb := facebook.New("<app id>", "<secret>")
     fb.SetAccessToken("<token>")
 
-    resp, err := fb.Api("/me", facebook.Get, nil)
+    resp, err := fb.Get("/me", nil)
     fmt.Println(resp, err)
 }
 ```
