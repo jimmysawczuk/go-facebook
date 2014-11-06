@@ -43,16 +43,17 @@ var (
 	MaxParams int = 1
 )
 
-// Builds a query based on the format string and supplied parameters.
-//
-// Proper format parameters are:
-// - %s - a single string
-// - %d - a single integer
-// - %f - a single floating point number
-// - %S - an array of strings (which are concatenated in the query)
-// - %D - an array of integers
-// - %F - an array of floating point numbers
-//
+/*
+	Builds a query based on the format string and supplied parameters.
+
+	Proper format parameters are:
+		%s		a single string
+		%d		a single integer
+		%f		a single floating point number
+		%S		an array of strings (which are concatenated in the query)
+		%D		an array of integers
+		%F		an array of floating point numbers
+*/
 func NewQuery(query string, params ...interface{}) *Query {
 	f := Query{
 		Query:      query,
