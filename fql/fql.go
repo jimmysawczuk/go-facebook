@@ -1,3 +1,4 @@
+// Package fql is a package designed to facilitate easy creation and execution of FQL queries. Still a work in progress.
 package fql
 
 import (
@@ -8,10 +9,6 @@ import (
 	"net/url"
 	"strings"
 )
-
-func init() {
-	_ = fmt.Sprintf
-}
 
 type Query struct {
 	Query      string
@@ -46,6 +43,16 @@ var (
 	MaxParams int = 1
 )
 
+// Builds a query based on the format string and supplied parameters.
+//
+// Proper format parameters are:
+// - %s - a single string
+// - %d - a single integer
+// - %f - a single floating point number
+// - %S - an array of strings (which are concatenated in the query)
+// - %D - an array of integers
+// - %F - an array of floating point numbers
+//
 func NewQuery(query string, params ...interface{}) *Query {
 	f := Query{
 		Query:      query,
@@ -68,6 +75,7 @@ func NewQuery(query string, params ...interface{}) *Query {
 	return &f
 }
 
+// Executes the query, with the result being stored in this.Result.
 func (this *Query) Exec() (err error) {
 
 	err = this.build()

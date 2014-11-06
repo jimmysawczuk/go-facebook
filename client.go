@@ -35,12 +35,20 @@ const (
 const graph_endpoint string = "https://graph.facebook.com"
 
 type GraphRequest struct {
-	Method  HTTPMethod
+	Method HTTPMethod
+
+	// Defaults to unversioned.
 	Version GraphAPIVersion
 
-	Path  string
+	// e.g. /me or /starbucks
+	Path string
+
+	// A url.Values representation of desired query string parameters, e.g. width=50&height=50
 	Query GraphQueryString
 
+	// True if the expected content-type of the return is application/json. If this is true, Exec() will try
+	// to marshal the response as JSON into the target object. Otherwise, it will just set the target object
+	// as a []byte.
 	IsJSON bool
 }
 
@@ -74,6 +82,8 @@ func (f *Client) AccessToken() AccessToken {
 	return f.accessToken
 }
 
+// Builds a new GraphRequest with the passed method, path and query string parameters. If no access token is passed,
+// but one is set in the client, it will be appended automatically. Assumes the response will be application/json.
 func (f *Client) NewGraphRequest(method HTTPMethod, path string, params GraphQueryString) *GraphRequest {
 	if params == nil {
 		params = GraphQueryString{}
@@ -93,6 +103,8 @@ func (f *Client) NewGraphRequest(method HTTPMethod, path string, params GraphQue
 	return &r
 }
 
+// Executes the request. Returns a GraphError if the response from Facebook is an error, or just
+// a normal error if something goes wrong before that or during unmarshaling.
 func (r *GraphRequest) Exec(target interface{}) error {
 
 	p := r.Path
@@ -147,18 +159,22 @@ func (r *GraphRequest) Exec(target interface{}) error {
 	return nil
 }
 
+// A wrapper for client.NewGraphRequest(Get, path, params)
 func (f *Client) Get(path string, params GraphQueryString) *GraphRequest {
 	return f.NewGraphRequest(Get, path, params)
 }
 
+// A wrapper for client.NewGraphRequest(Post, path, params)
 func (f *Client) Post(path string, params GraphQueryString) *GraphRequest {
 	return f.NewGraphRequest(Post, path, params)
 }
 
+// A wrapper for client.NewGraphRequest(Put, path, params)
 func (f *Client) Put(path string, params GraphQueryString) *GraphRequest {
 	return f.NewGraphRequest(Put, path, params)
 }
 
+// Returns an app access token for the client ID/secret of the client.
 func (f *Client) GetAppAccessToken() (string, error) {
 	req := f.Get("/oauth/access_token", GraphQueryString{
 		"client_id":     []string{f.appId},

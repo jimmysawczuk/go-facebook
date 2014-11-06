@@ -1,9 +1,5 @@
 package fql
 
-import (
-// "fmt"
-)
-
 type Result struct {
 	raw_result []interface{}
 	Fields     map[string]int
@@ -12,10 +8,12 @@ type Result struct {
 
 type Row []interface{}
 
+// Returns the number of rows in the (unpacked) Result.
 func (this Result) Len() int {
 	return len(this.Rows)
 }
 
+// Unpacks a raw result into its corresponding Fields and Rows.
 func (this *Result) Unpack() {
 	this.Fields = make(map[string]int)
 	for i := range this.raw_result {
