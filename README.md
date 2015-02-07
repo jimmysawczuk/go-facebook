@@ -4,6 +4,8 @@
 
 A Facebook SDK for Go.
 
+[ ![Codeship Status for jimmysawczuk/go-facebook](https://codeship.com/projects/10f96b80-90bd-0132-f540-66130ee6610f/status?branch=master)](https://codeship.com/projects/61581)
+
 ## Installation
 
 Install this package by typing `go get github.com/jimmysawczuk/go-facebook` in your terminal. You can then use it in your import statement like so:
@@ -45,7 +47,7 @@ You can find the latest godoc output for this repository at [GoDoc.org](http://g
 ## License
 
 	The MIT License (MIT)
-	Copyright (C) 2013-2014 by Jimmy Sawczuk
+	Copyright (C) 2013-2015 by Jimmy Sawczuk
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
