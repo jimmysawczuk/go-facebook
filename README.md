@@ -1,7 +1,5 @@
 # `go-facebook`
 
-[ ![Codeship Status for jimmysawczuk/go-facebook](https://codeship.io/projects/766a4f10-43a4-0132-f598-66ff35301625/status)](https://codeship.io/projects/44729)
-
 A Facebook SDK for Go.
 
 [ ![Codeship Status for jimmysawczuk/go-facebook](https://codeship.com/projects/10f96b80-90bd-0132-f540-66130ee6610f/status?branch=master)](https://codeship.com/projects/61581)
