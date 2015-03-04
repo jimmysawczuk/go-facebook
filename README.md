@@ -2,7 +2,7 @@
 
 A Facebook SDK for Go.
 
-[ ![Codeship Status for jimmysawczuk/go-facebook](https://codeship.com/projects/10f96b80-90bd-0132-f540-66130ee6610f/status?branch=master)](https://codeship.com/projects/61581)
+[ ![travis-ci status for jimmysawczuk/go-facebook](https://travis-ci.org/jimmysawczuk/go-facebook.svg)](https://travis-ci.org/jimmysawczuk/go-facebook)
 
 ## Installation
 
