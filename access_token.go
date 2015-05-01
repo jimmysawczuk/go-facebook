@@ -37,7 +37,7 @@ func (at *AccessToken) Lint(f *Client) error {
 
 	target := struct {
 		Data struct {
-			AppId       int64    `json:"app_id"`
+			AppId       string   `json:"app_id"`
 			Valid       bool     `json:"is_valid"`
 			Application string   `json:"application"`
 			UserId      int64    `json:"user_id"`

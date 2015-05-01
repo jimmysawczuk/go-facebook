@@ -28,18 +28,18 @@ func TestPermissions(t *testing.T) {
 
 func TestGraphAPI(t *testing.T) {
 
-	req := fb.Get("/zuck", nil)
+	req := fb.Get("/starbucks", nil)
 
 	target := struct {
 		ID       string `json:"id"`
 		Name     string `json:"name"`
-		Username string `json:username"`
+		Username string `json:"username"`
 	}{}
 
 	err := req.Exec(&target)
 
-	if err != nil || target.ID != "4" {
-		t.Errorf("Error: %s, ID: %d", err, target.ID)
+	if err != nil || target.ID != "22092443056" {
+		t.Errorf("Error: %s, ID: %s", err, target.ID)
 	}
 }
 
@@ -49,7 +49,7 @@ func TestInvalidGraphCall(t *testing.T) {
 	target := struct {
 		ID       string `json:"id"`
 		Name     string `json:"name"`
-		Username string `json:username"`
+		Username string `json:"username"`
 	}{}
 
 	err := req.Exec(&target)

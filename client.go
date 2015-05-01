@@ -143,7 +143,7 @@ func (r *GraphRequest) Exec(target interface{}) error {
 		if err == nil {
 			return error_target
 		} else {
-			return fmt.Errorf("couldn't unmarshal response into Graph Error: %s\n", err, string(buf))
+			return fmt.Errorf("couldn't unmarshal response into Graph Error: %s\n\t%s", err, string(buf))
 		}
 	}
 
