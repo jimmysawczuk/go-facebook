@@ -40,7 +40,7 @@ func (at *AccessToken) Lint(f *Client) error {
 			AppId       string   `json:"app_id"`
 			Valid       bool     `json:"is_valid"`
 			Application string   `json:"application"`
-			UserId      int64    `json:"user_id"`
+			UserId      int64    `json:"user_id,string"`
 			ExpiresAt   int64    `json:"expires_at"`
 			Scopes      []string `json:"scopes"`
 		} `json:"data"`
