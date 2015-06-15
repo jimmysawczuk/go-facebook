@@ -10,7 +10,7 @@ func init() {
 }
 
 func TestBasicQuery(t *testing.T) {
-	fql := NewQuery("SELECT uid, name FROM user WHERE uid IN (15504121, 774070614)")
+	fql := NewQuery("SELECT page_id, name FROM page WHERE username IN ('Starbucks', 'McDonalds')")
 	err := fql.Exec()
 	if err != nil {
 		t.Errorf(err.Error())
@@ -23,7 +23,7 @@ func TestBasicQuery(t *testing.T) {
 }
 
 func TestParameterizedQuery(t *testing.T) {
-	fql := NewQuery("SELECT uid, name FROM user WHERE uid IN (%d, %d)", 15504121, 774070614)
+	fql := NewQuery("SELECT page_id, name FROM page WHERE username IN (%s, %s)", "Starbucks", "McDonalds")
 	err := fql.Exec()
 	if err != nil {
 		t.Errorf(err.Error())
@@ -36,14 +36,15 @@ func TestParameterizedQuery(t *testing.T) {
 }
 
 func TestArrayQuery(t *testing.T) {
-	fql := NewQuery("SELECT uid, name FROM user WHERE uid IN (%D)", []int{15504121, 774070614})
+	fql := NewQuery("SELECT page_id, name FROM page WHERE username IN (%S)", []string{"Starbucks", "McDonalds", "Dominos"})
 	err := fql.Exec()
 	if err != nil {
 		t.Errorf(err.Error())
 		t.Fail()
 	}
 
-	if fql.Result.Len() != 2 {
+	if fql.Result.Len() != 3 {
+		t.Errorf("Bad length: %d", fql.Result.Len())
 		t.Fail()
 	}
 }
