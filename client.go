@@ -147,13 +147,16 @@ func (r *GraphRequest) Exec(target interface{}) error {
 		}
 	}
 
-	if r.IsJSON {
+	if _, ok := target.(*[]byte); ok {
+		*(target.(*[]byte)) = buf
+		return nil
+	} else if r.IsJSON {
 		err = json.Unmarshal(buf, target)
 		if err != nil {
 			return fmt.Errorf("error unmarshaling response into %T: %s\n\n%s", target, err, string(buf))
 		}
-	} else if _, ok := target.(*[]byte); ok {
-		*(target.(*[]byte)) = buf
+	} else {
+		return fmt.Errorf("invalid target type for non-json response: %T", target)
 	}
 
 	return nil

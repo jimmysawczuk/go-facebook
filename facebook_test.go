@@ -1,6 +1,7 @@
 package facebook
 
 import (
+	"encoding/json"
 	"fmt"
 	"testing"
 )
@@ -17,6 +18,23 @@ func init() {
 		fmt.Printf("%s", err)
 	}
 
+}
+
+func TestRawUnmarshal(t *testing.T) {
+	req := fb.Get("/starbucks", nil)
+	target := []byte{}
+	err := req.Exec(&target)
+
+	target2 := struct {
+		ID       string `json:"id"`
+		Name     string `json:"name"`
+		Username string `json:"username"`
+	}{}
+
+	err = json.Unmarshal(target, &target2)
+	if err != nil || target2.ID != "22092443056" {
+		t.Errorf("Error: %s, ID: %s", err, target2.ID)
+	}
 }
 
 func TestPermissions(t *testing.T) {
