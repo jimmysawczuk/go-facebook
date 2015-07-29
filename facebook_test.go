@@ -72,10 +72,10 @@ func TestInvalidGraphCall(t *testing.T) {
 
 	err := req.Exec(&target)
 
-	if graph_error, ok := err.(GraphError); !ok {
+	if graphError, ok := err.(GraphError); !ok {
 		t.Errorf("call should have failed and returned a GraphError, but returned %T instead: %s", err, err)
-	} else if ok && graph_error.Code != 803 {
-		t.Errorf("call should have failed with code 803, instead failed with %d", graph_error.Code)
+	} else if ok && graphError.Code != 803 {
+		t.Errorf("call should have failed with code 803, instead failed with %d", graphError.Code)
 	}
 }
 

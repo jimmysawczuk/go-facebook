@@ -1,5 +1,7 @@
 package types
 
+// Page is an object that represents a Page object from the Graph API (see https://developers.facebook.com/docs/graph-api/reference/page).
+// Some commonly used fields are included.
 type Page struct {
 	ID       string `json:"id"`
 	Name     string `json:"name"`

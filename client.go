@@ -10,16 +10,28 @@ import (
 	"path"
 )
 
-// The Facebook Client object.
+// Client is an object which represents a pathway to the Facebook Graph API.
 type Client struct {
-	appId       string
+	appID       string
 	secret      string
 	accessToken AccessToken
+
+	HTTPClient HTTPClient
 }
 
+// HTTPMethod is a string which represents an HTTP method (e.g. GET, POST or PUT)
 type HTTPMethod string
+
+// GraphAPIVersion is a string which represents the Graph API version to use (e.g. v2.4)
 type GraphAPIVersion string
 
+// HTTPClient is the interface which is used to communicate with Facebook. It defaults to http.DefaultClient, but is implemented this way to allow for
+// middleware functionality later on.
+type HTTPClient interface {
+	Do(*http.Request) (*http.Response, error)
+}
+
+// Some useful constants for building requests
 const (
 	Get  HTTPMethod = "GET"
 	Post            = "POST"
@@ -30,11 +42,15 @@ const (
 	Version20                   = "v2.0"
 	Version21                   = "v2.1"
 	Version22                   = "v2.2"
+	Version23                   = "v2.3"
+	Version24                   = "v2.4"
 )
 
-const graph_endpoint string = "https://graph.facebook.com"
+const graphEndpoint string = "https://graph.facebook.com"
 
+// GraphRequest is an HTTP request to the Graph API
 type GraphRequest struct {
+	// The HTTP method used
 	Method HTTPMethod
 
 	// Defaults to unversioned.
@@ -50,39 +66,45 @@ type GraphRequest struct {
 	// to marshal the response as JSON into the target object. Otherwise, it will just set the target object
 	// as a []byte.
 	IsJSON bool
+
+	client HTTPClient
 }
 
+// GraphQueryString is a query string for a GraphRequest
 type GraphQueryString url.Values
 
 // An empty Facebook API client with which you can make public requests or set an arbitrary access token.
-var BlankClient *Client = New("", "")
+var BlankClient = New("", "")
 
-// Returns a new Client. Pass empty strings here if you don't need the object to have your App ID or Secret.
-func New(appId string, secret string) (f *Client) {
+// New returns a new *Client. Pass empty strings here if you don't need the object to have your App ID or Secret.
+func New(appID string, secret string) (f *Client) {
 	f = new(Client)
 
-	f.appId = appId
+	f.appID = appID
 	f.secret = secret
+
+	f.HTTPClient = http.DefaultClient
 
 	return f
 }
 
-// Sets the working access token.
+// SetAccessToken sets the working access token.
 func (f *Client) SetAccessToken(at string) {
 	f.accessToken = AccessToken{token: at}
 	f.accessToken.Lint(f)
 }
 
+// LintAccessToken is an alias for client.AccessToken().Lint().
 func (f *Client) LintAccessToken() (err error) {
 	return f.accessToken.Lint(f)
 }
 
-// Gets the working access token.
+// AccessToken returns the working access token.
 func (f *Client) AccessToken() AccessToken {
 	return f.accessToken
 }
 
-// Builds a new GraphRequest with the passed method, path and query string parameters. If no access token is passed,
+// NewGraphRequest builds a new GraphRequest with the passed method, path and query string parameters. If no access token is passed,
 // but one is set in the client, it will be appended automatically. Assumes the response will be application/json.
 func (f *Client) NewGraphRequest(method HTTPMethod, path string, params GraphQueryString) *GraphRequest {
 	if params == nil {
@@ -94,6 +116,7 @@ func (f *Client) NewGraphRequest(method HTTPMethod, path string, params GraphQue
 		Method: method,
 		Query:  params,
 		IsJSON: true,
+		client: f.HTTPClient,
 	}
 
 	if _, exists := params["access_token"]; !exists && f.accessToken.Empty() == false {
@@ -103,7 +126,7 @@ func (f *Client) NewGraphRequest(method HTTPMethod, path string, params GraphQue
 	return &r
 }
 
-// Executes the request. Returns a GraphError if the response from Facebook is an error, or just
+// Exec executes the given request. Returns a GraphError if the response from Facebook is an error, or just
 // a normal error if something goes wrong before that or during unmarshaling.
 func (r *GraphRequest) Exec(target interface{}) error {
 
@@ -126,8 +149,7 @@ func (r *GraphRequest) Exec(target interface{}) error {
 		req.Header.Add("Accept", "application/json")
 	}
 
-	http_client := http.DefaultClient
-	resp, err := http_client.Do(req)
+	resp, err := r.client.Do(req)
 	if err != nil {
 		return fmt.Errorf("error setting up http request: %s", err)
 	}
@@ -138,13 +160,13 @@ func (r *GraphRequest) Exec(target interface{}) error {
 	}
 
 	if resp.StatusCode != 200 {
-		error_target := GraphError{}
-		err = json.Unmarshal(buf, &error_target)
-		if err == nil {
-			return error_target
-		} else {
+		errorTarget := GraphError{}
+		err = json.Unmarshal(buf, &errorTarget)
+		if err != nil {
 			return fmt.Errorf("couldn't unmarshal response into Graph Error: %s\n\t%s", err, string(buf))
 		}
+
+		return errorTarget
 	}
 
 	if _, ok := target.(*[]byte); ok {
@@ -162,25 +184,25 @@ func (r *GraphRequest) Exec(target interface{}) error {
 	return nil
 }
 
-// A wrapper for client.NewGraphRequest(Get, path, params)
+// Get is a wrapper for client.NewGraphRequest(Get, path, params)
 func (f *Client) Get(path string, params GraphQueryString) *GraphRequest {
 	return f.NewGraphRequest(Get, path, params)
 }
 
-// A wrapper for client.NewGraphRequest(Post, path, params)
+// Post is a wrapper for client.NewGraphRequest(Post, path, params)
 func (f *Client) Post(path string, params GraphQueryString) *GraphRequest {
 	return f.NewGraphRequest(Post, path, params)
 }
 
-// A wrapper for client.NewGraphRequest(Put, path, params)
+// Put is a wrapper for client.NewGraphRequest(Put, path, params)
 func (f *Client) Put(path string, params GraphQueryString) *GraphRequest {
 	return f.NewGraphRequest(Put, path, params)
 }
 
-// Returns an app access token for the client ID/secret of the client.
+// GetAppAccessToken builds an app access token for the client ID/secret of the client.
 func (f *Client) GetAppAccessToken() (string, error) {
 	req := f.Get("/oauth/access_token", GraphQueryString{
-		"client_id":     []string{f.appId},
+		"client_id":     []string{f.appID},
 		"client_secret": []string{f.secret},
 		"grant_type":    []string{"client_credentials"},
 	})
@@ -188,14 +210,14 @@ func (f *Client) GetAppAccessToken() (string, error) {
 
 	target := []byte{}
 	err := req.Exec(&target)
-	if err == nil {
-		vals, _ := url.ParseQuery(string(target))
-		if str, exists := vals["access_token"]; exists && str[0] != "" {
-			return str[0], nil
-		} else {
-			return "", fmt.Errorf("access token wasn't in response")
-		}
-	} else {
+	if err != nil {
 		return "", fmt.Errorf("error executing request for access token: %s", err)
 	}
+
+	vals, _ := url.ParseQuery(string(target))
+	str, exists := vals["access_token"]
+	if !exists || str[0] == "" {
+		return "", fmt.Errorf("access token wasn't in response")
+	}
+	return str[0], nil
 }

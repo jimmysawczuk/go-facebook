@@ -6,15 +6,25 @@ import (
 	"time"
 )
 
+// AgeRange is an object representing an age range for a given user (see: https://developers.facebook.com/docs/graph-api/reference/age-range/).
 type AgeRange struct {
 	Min int `json:"min"`
 	Max int `json:"max"`
 }
 
+// Birthday is a time.Time with some custom JSON marshaling methods.
 type Birthday time.Time
 
+// Gender is a string that represents a Facebook user's gender.
 type Gender string
 
+// Two of the more common genders.
+const (
+	Male   Gender = "male"
+	Female        = "female"
+)
+
+// CoverPhoto is an object that has information about a Facebook user's cover photo (see: https://developers.facebook.com/docs/graph-api/reference/cover-photo/)
 type CoverPhoto struct {
 	ID      string `json:"id"`
 	Source  string `json:"source"`
@@ -22,11 +32,8 @@ type CoverPhoto struct {
 	OffsetY int    `json:"offset_y"`
 }
 
-const (
-	Male   Gender = "male"
-	Female        = "female"
-)
-
+// User is an object that represents a Facebook user (see: https://developers.facebook.com/docs/graph-api/reference/user).
+// Some of the more commonly used fields are included, but you may need additional permissions from the given user to get them all.
 type User struct {
 	ID string `json:"id"`
 
@@ -55,21 +62,23 @@ type User struct {
 	UpdatedTime time.Time `json:"updated_time"`
 }
 
-func (this Birthday) MarshalJSON() ([]byte, error) {
-	return []byte(time.Time(this).Format("01/02/2006")), nil
+// MarshalJSON marshals a Birthday into a MM/DD/YYYY format.
+func (bd Birthday) MarshalJSON() ([]byte, error) {
+	return []byte(time.Time(bd).Format("01/02/2006")), nil
 }
 
-func (this *Birthday) UnmarshalJSON(in []byte) (err error) {
-	birthday_str := ""
-	err = json.Unmarshal(in, &birthday_str)
+// UnmarshalJSON unmarshals a MM/DD/YYYY string into a Birthday object.
+func (bd *Birthday) UnmarshalJSON(in []byte) (err error) {
+	bdStr := ""
+	err = json.Unmarshal(in, &bdStr)
 	if err != nil {
 		return fmt.Errorf("Error parsing birthday from string: %s", err)
 	}
-	t, err := time.Parse("01/02/2006", birthday_str)
+	t, err := time.Parse("01/02/2006", bdStr)
 	if err != nil {
 		return fmt.Errorf("Error parsing birthday into time.Time: %s", err)
 	}
 
-	*this = Birthday(t)
+	*bd = Birthday(t)
 	return nil
 }
