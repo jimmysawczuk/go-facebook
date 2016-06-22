@@ -50,6 +50,7 @@ const (
 	Version24                   = "v2.4"
 	Version25                   = "v2.5"
 	Version26                   = "v2.6"
+	Latest                      = "v2.6"
 )
 
 const graphEndpoint string = "https://graph.facebook.com"
