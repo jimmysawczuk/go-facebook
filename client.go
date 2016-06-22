@@ -16,6 +16,10 @@ type Client struct {
 	secret      string
 	accessToken AccessToken
 
+	// The default Graph API version to use
+	DefaultVersion GraphAPIVersion
+
+	// The HTTP client to use when making API requests
 	HTTPClient HTTPClient
 }
 
@@ -44,6 +48,8 @@ const (
 	Version22                   = "v2.2"
 	Version23                   = "v2.3"
 	Version24                   = "v2.4"
+	Version25                   = "v2.5"
+	Version26                   = "v2.6"
 )
 
 const graphEndpoint string = "https://graph.facebook.com"
@@ -53,7 +59,7 @@ type GraphRequest struct {
 	// The HTTP method used
 	Method HTTPMethod
 
-	// Defaults to unversioned.
+	// Defaults to the client's DefaultVersion.
 	Version GraphAPIVersion
 
 	// e.g. /me or /starbucks
@@ -85,6 +91,8 @@ func New(appID string, secret string) (f *Client) {
 
 	f.HTTPClient = http.DefaultClient
 
+	f.DefaultVersion = Unversioned
+
 	return f
 }
 
@@ -112,11 +120,12 @@ func (f *Client) NewGraphRequest(method HTTPMethod, path string, params GraphQue
 	}
 
 	r := GraphRequest{
-		Path:   path,
-		Method: method,
-		Query:  params,
-		IsJSON: true,
-		client: f.HTTPClient,
+		Path:    path,
+		Method:  method,
+		Query:   params,
+		IsJSON:  true,
+		Version: f.DefaultVersion,
+		client:  f.HTTPClient,
 	}
 
 	if _, exists := params["access_token"]; !exists && f.accessToken.Empty() == false {
@@ -124,6 +133,12 @@ func (f *Client) NewGraphRequest(method HTTPMethod, path string, params GraphQue
 	}
 
 	return &r
+}
+
+// SetVersion sets the Graph API version on the request.
+func (r *GraphRequest) SetVersion(v GraphAPIVersion) *GraphRequest {
+	r.Version = v
+	return r
 }
 
 // Exec executes the given request. Returns a GraphError if the response from Facebook is an error, or just

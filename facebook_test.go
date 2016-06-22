@@ -101,12 +101,31 @@ func TestGetPage(t *testing.T) {
 	if err != nil || pg2.Username != "Starbucks" {
 		t.Errorf("%s", err)
 	}
-
 }
 
 func TestGetUser(t *testing.T) {
 	jimmy, err := fb.GetUser("15504121")
 	if err != nil || jimmy.Name != "Jimmy Sawczuk" {
 		t.Errorf("%s", err)
+	}
+}
+
+func TestGetVersionedPage(t *testing.T) {
+	req := fb.Get("/starbucks", GraphQueryString{
+		"fields": []string{"fan_count,name,username"},
+	}).SetVersion(Version26)
+	target := []byte{}
+	err := req.Exec(&target)
+
+	target2 := struct {
+		ID       string `json:"id"`
+		Name     string `json:"name"`
+		FanCount int64  `json:"fan_count"`
+		Username string `json:"username"`
+	}{}
+
+	err = json.Unmarshal(target, &target2)
+	if err != nil || target2.ID != "22092443056" {
+		t.Errorf("Error: %s, ID: %s", err, target2.ID)
 	}
 }
