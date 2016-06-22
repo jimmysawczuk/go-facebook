@@ -1,8 +1,8 @@
-# `go-facebook`
+# go-facebook
 
-A Facebook SDK for Go.
+A basic Facebook SDK for Go.
 
-[ ![travis-ci status for jimmysawczuk/go-facebook](https://travis-ci.org/jimmysawczuk/go-facebook.svg)](https://travis-ci.org/jimmysawczuk/go-facebook)
+[ ![travis-ci status for jimmysawczuk/go-facebook](https://travis-ci.org/jimmysawczuk/go-facebook.svg)](https://travis-ci.org/jimmysawczuk/go-facebook) [![GoDoc](https://godoc.org/github.com/jimmysawczuk/go-facebook?status.svg)](https://godoc.org/github.com/jimmysawczuk/go-facebook) [![Go Report Card](https://goreportcard.com/badge/github.com/jimmysawczuk/go-facebook)](https://goreportcard.com/report/github.com/jimmysawczuk/go-facebook)
 
 ## Installation
 
@@ -44,23 +44,4 @@ You can find the latest godoc output for this repository at [GoDoc.org](http://g
 
 ## License
 
-	The MIT License (MIT)
-	Copyright (C) 2013-2015 by Jimmy Sawczuk
-
-	Permission is hereby granted, free of charge, to any person obtaining a copy
-	of this software and associated documentation files (the "Software"), to deal
-	in the Software without restriction, including without limitation the rights
-	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-	copies of the Software, and to permit persons to whom the Software is
-	furnished to do so, subject to the following conditions:
-
-	The above copyright notice and this permission notice shall be included in
-	all copies or substantial portions of the Software.
-
-	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-	THE SOFTWARE
+go-facebook is released under [the MIT license](https://github.com/jimmysawczuk/go-facebook/blob/master/LICENSE).
