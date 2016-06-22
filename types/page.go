@@ -1,13 +1,13 @@
 package types
 
-// Page is an object that represents a Page object from the Graph API (see https://developers.facebook.com/docs/graph-api/reference/page).
+// Page is an object that represents a Page object from the Graph API as of v2.6 (see https://developers.facebook.com/docs/graph-api/reference/page).
 // Some commonly used fields are included.
 type Page struct {
 	ID       string `json:"id"`
 	Name     string `json:"name"`
 	Username string `json:"username"`
 
-	Likes             int `json:"likes"`
+	FanCount          int `json:"fan_count"`
 	TalkingAboutCount int `json:"talking_about_count"`
 
 	About       string `json:"about"`
@@ -20,4 +20,6 @@ type Page struct {
 
 	CanPost     bool `json:"can_post"`
 	IsPublished bool `json:"is_published"`
+
+	Likes []Page `json:"data.likes"`
 }

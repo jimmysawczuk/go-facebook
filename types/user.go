@@ -32,7 +32,7 @@ type CoverPhoto struct {
 	OffsetY int    `json:"offset_y"`
 }
 
-// User is an object that represents a Facebook user (see: https://developers.facebook.com/docs/graph-api/reference/user).
+// User is an object that represents a Facebook user as of v2.6 (see: https://developers.facebook.com/docs/graph-api/reference/user).
 // Some of the more commonly used fields are included, but you may need additional permissions from the given user to get them all.
 type User struct {
 	ID string `json:"id"`
@@ -41,8 +41,6 @@ type User struct {
 	FirstName  string `json:"first_name"`
 	MiddleName string `json:"middle_name"`
 	LastName   string `json:"last_name"`
-
-	Username string `json:"username"`
 
 	Gender   Gender   `json:"gender"`
 	AgeRange AgeRange `json:"age_range"`

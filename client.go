@@ -216,20 +216,32 @@ func (f *Client) Put(path string, params GraphQueryString) *GraphRequest {
 
 // GetAppAccessToken builds an app access token for the client ID/secret of the client.
 func (f *Client) GetAppAccessToken() (string, error) {
+	var err error
+
 	req := f.Get("/oauth/access_token", GraphQueryString{
 		"client_id":     []string{f.appID},
 		"client_secret": []string{f.secret},
 		"grant_type":    []string{"client_credentials"},
 	})
-	req.IsJSON = false
 
-	target := []byte{}
-	err := req.Exec(&target)
-	if err != nil {
-		return "", fmt.Errorf("error executing request for access token: %s", err)
+	target_obj := struct {
+		Token string `json:"access_token"`
+		Type  string `json:"token_type"`
+	}{}
+	err = req.Exec(&target_obj)
+	if err == nil {
+		return target_obj.Token, nil
 	}
 
-	vals, _ := url.ParseQuery(string(target))
+	fmt.Println(err)
+
+	target_raw := []byte{}
+	err = req.Exec(&target_raw)
+	if err != nil {
+		return "", fmt.Errorf("invalid response")
+	}
+
+	vals, _ := url.ParseQuery(string(target_raw))
 	str, exists := vals["access_token"]
 	if !exists || str[0] == "" {
 		return "", fmt.Errorf("access token wasn't in response")
